@@ -53,12 +53,20 @@ class GetInfoOffer(basesinfonierbolt.BaseSinfonierBolt):
 
         # Obtenemos la información de la oferta
         info = page.xpath('//code[@id="decoratedJobPostingModule"]/comment()')[0]
-        url = page.xpath('//code[@id="topCardV2Module"]/comment()')[0]
+        enterprise = page.xpath('//code[@id="topCardV2Module"]/comment()')[0]
 
         # Creamos el json a partir del dicciolnario de ofertas
+        info_json = json.loads(info.text)
+        url_json = json.loads(enterprise.text)
 
-        self.addField("description", [info.text])
-        self.addField("company", [info.text])
+        company_json = info_json['decoratedJobPosting']['decoratedCompany']
+
+        self.addField("companyName", company_json['canonicalName'])
+        self.addField("sector", company_json['formattedIndustries'])
+        self.addField("desciption", [company_json['localizedDescription']])
+        self.addField("offerViews", url_json["viewCount"])
+        self.addField("registrationUrl", url_json["registrationUrl"])
+        self.addField("companyLinkedin", url_json["companyPageNameLink"])
         self.emit()
 
     def userclose(self):

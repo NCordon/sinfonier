@@ -40,14 +40,13 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
 
     def userprepare(self):
         self.keywords=self.getParam("keywords")
-        
-        """
+
+
         self.job = self.getParam("job")
         self.location = self.getParam("location")
-        """
+
 
     def userprocess(self):
-        """
         location = self.location
         job = self.job
         place=""
@@ -59,9 +58,7 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
 
 
         query = "https://www.linkedin.com/jobs/search?keywords=" + job + place
-        """
-        keywords = self.keywords
-        query = "https://www.linkedin.com/jobs/search?keywords=" + keywords
+
         # Extraemos los nombres de los trabajos y los enlaces
         page = html.fromstring(requests.get(query).content)
         offersNames = page.xpath('//span[@class="job-title-text"]/text()')
