@@ -1,3 +1,4 @@
 {
-   "fieldfromjson" : "testing get json fields"
+   "fieldfromjson" : "testing get json fields",
+   "returninfo" : ["identifier", "creator","date"]
 }

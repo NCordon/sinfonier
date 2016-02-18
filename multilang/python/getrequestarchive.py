@@ -37,18 +37,27 @@ class GetInfoArchive(basesinfonierbolt.BaseSinfonierBolt):
 
     def userprepare(self):
         self.archivequery=self.getParam("archivequery")
+        self.returninfo=self.getParam("returninfo")
 
     def userprocess(self):
-        archivequery = self.archivequery.replace(" ", "+")
+        archivequery = self.getField(self.archivequery)
+        returninfo=map(str,(self.getField(self.returninfo)))
+
+
 
         try:
-            query = "https://archive.org/advancedsearch.php?q=" + archivequery + "&fl[]=avg_rating&fl[]=call_number&fl[]=collection&fl[]=contributor&fl[]=coverage&fl[]=creator&fl[]=date&fl[]=description&fl[]=downloads&fl[]=external-identifier&fl[]=foldoutcount&fl[]=format&fl[]=headerImage&fl[]=identifier&fl[]=imagecount&fl[]=language&fl[]=licenseurl&fl[]=mediatype&fl[]=members&fl[]=month&fl[]=num_reviews&fl[]=oai_updatedate&fl[]=publicdate&fl[]=publisher&fl[]=related-external-id&fl[]=reviewdate&fl[]=rights&fl[]=scanningcentre&fl[]=source&fl[]=subject&fl[]=title&fl[]=type&fl[]=volume&fl[]=week&fl[]=year&sort[]=&sort[]=&sort[]=&rows=50&page=1&output=json&callback=callback&save=yes"
-            t = requests.get(query).text
+            query = "https://archive.org/advancedsearch.php?q=" + archivequery
 
-            t = t.replace("callback(","",1)[:-1]
+            for param in returninfo:
+                query = query + "&fl[]=" + param
+
+            query = query + "&output=json"
+
+            t = requests.get(query).text
             data = json.loads(t)["response"]
 
             self.addField("response", data)
+
         except Exception,e:
             addField("status", "error")
             addField("exception", str(e))
