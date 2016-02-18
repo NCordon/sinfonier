@@ -48,6 +48,7 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
 
 
     def userprocess(self):
+        #location = str(self.getField("location"))
         location = self.location
         job = self.job
         place=""
@@ -62,40 +63,56 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
         get_location = re.compile("locationId\"\:[^\}]*")
 
 
-        query = "https://www.linkedin.com/jobs/search?keywords=" + job + place
-        query_reponse = requests.get(query)
-        # Obtenemos el identificador (por ejemplo es:5086
-        locationId = get_location.search(query_reponse.text).group(0)
+        try:
+            query = "https://www.linkedin.com/jobs/search?keywords=" + job + place
+            query_rseponse = requests.get(query)
 
-        # Lo normalizamos
-        locationId = locationId.replace('"','').replace("locationId:",'')
-        start = 0
-        scrap = True
+            # Obtenemos el identificador (por ejemplo es:5086
+            locationId = get_location.search(query_response.text).group(0)
 
-        # Diccionario de ofertas
-        offers={}
+            # Lo normalizamos
+            locationId = locationId.replace('"','').replace("locationId:",'')
+            start = 0
+            scrap = True
+            setOffers = True
+            # Diccionario de ofertas
+            offers={}
 
-        while scrap:
-            query = "https://www.linkedin.com/jobs/search?keywords=" + job + '&locationId=' + locationId + '&start=' + str(start) + '&count=25'
+            while scrap:
+                try:
+                    query = "https://www.linkedin.com/jobs/search?keywords=" + job + '&locationId=' + locationId + '&start=' + str(start) + '&count=25'
 
-            # Extraemos los nombres de los trabajos y los enlaces
-            page = html.fromstring(requests.get(query).content)
-            offersNames = page.xpath('//span[@class="job-title-text"]/text()')
-            offersLinks = page.xpath('//a[@class="job-title-link"]/@href')
+                    # Extraemos los nombres de los trabajos y los enlaces
+                    page = html.fromstring(requests.get(query).content)
+                    offersNames = page.xpath('//span[@class="job-title-text"]/text()')
+                    offersLinks = page.xpath('//a[@class="job-title-link"]/@href')
 
 
-            for name,link in zip(offersNames, offersLinks):
-                offers[name]=link
+                    for name,link in zip(offersNames, offersLinks):
+                        offers[name]=link
 
-            # Scrapearemos la siguiente página
-            start = start+25
+                    # Scrapearemos la siguiente página
+                    start = start+25
 
-            if not offersNames:
-                scrap = False
+                    if not offersNames:
+                        scrap = False
 
-        # Creamos el json a partir del dicciolnario de ofertas
-        json_data = json.dumps(offers)
-        self.addField("ofertas", offers)
+                except Exception,e:
+                    addField("status", "error")
+                    addField("exception", str(e))
+                    scrap = False
+                    setOffers = False
+
+
+            if setOffers:
+                # Creamos el json a partir del dicciolnario de ofertas
+                json_data = json.dumps(offers)
+                self.addField("ofertas", offers)
+
+        except Exception,e:
+            addField("status", "error")
+            addField("exception", str(e))
+
         self.emit()
 
     def userclose(self):

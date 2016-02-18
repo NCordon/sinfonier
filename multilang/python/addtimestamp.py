@@ -29,7 +29,7 @@ import basesinfonierbolt
 import datetime
 
 class AddTimestamp(basesinfonierbolt.BaseSinfonierBolt):
-      
+
     def __init__(self):
 
         basesinfonierbolt.BaseSinfonierBolt().__init__()
@@ -42,11 +42,12 @@ class AddTimestamp(basesinfonierbolt.BaseSinfonierBolt):
 
         self.addField("timestamp",datetime.datetime.utcnow().isoformat().split(".")[0])
         self.addField("keyfield",self.keyfield)
-        self.addField("fieldfromjson",str(self.getField("fieldfromjson")))
+        self.addField("fieldfromjson",str(self.getField("fieldfromjson")
+        ))
         self.emit()
-   
+
     def userclose(self):
-       
+
         pass
-               
+
 AddTimestamp().run()

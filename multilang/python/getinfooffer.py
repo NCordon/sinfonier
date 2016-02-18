@@ -49,25 +49,33 @@ class GetInfoOffer(basesinfonierbolt.BaseSinfonierBolt):
             # Simulando un navegador, ya que Linkedin por defecto no deja hacer
             # scraping a páginas personales
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-        page = html.fromstring(requests.get(url, headers=headers).content)
+        try:
+            query_response = requests.get(url, headers=headers)
+            page = html.fromstring(query_response.content)
 
-        # Obtenemos la información de la oferta
-        info = page.xpath('//code[@id="decoratedJobPostingModule"]/comment()')[0]
-        enterprise = page.xpath('//code[@id="topCardV2Module"]/comment()')[0]
+            # Obtenemos la información de la oferta
+            info = page.xpath('//code[@id="decoratedJobPostingModule"]/comment()')[0]
+            enterprise = page.xpath('//code[@id="topCardV2Module"]/comment()')[0]
 
-        # Creamos el json a partir del dicciolnario de ofertas
-        info_json = json.loads(info.text)
-        url_json = json.loads(enterprise.text)
+            # Creamos el json a partir del dicciolnario de ofertas
+            info_json = json.loads(info.text)
+            url_json = json.loads(enterprise.text)
 
-        company_json = info_json['decoratedJobPosting']['decoratedCompany']
+            company_json = info_json['decoratedJobPosting']['decoratedCompany']
 
-        self.addField("companyName", company_json['canonicalName'])
-        self.addField("sector", company_json['formattedIndustries'])
-        self.addField("desciption", [company_json['localizedDescription']])
-        self.addField("offerViews", url_json["viewCount"])
-        self.addField("registrationUrl", url_json["registrationUrl"])
-        self.addField("companyLinkedin", url_json["companyPageNameLink"])
-        self.emit()
+
+
+            self.addField("companyName", company_json['canonicalName'])
+            self.addField("sector", company_json['formattedIndustries'])
+            self.addField("desciption", [company_json['localizedDescription']])
+            self.addField("offerViews", url_json["viewCount"])
+            self.addField("registrationUrl", url_json["registrationUrl"])
+            self.addField("companyLinkedin", url_json["companyPageNameLink"])
+            self.emit()
+        # Excepción si la página no existe
+        except Exception,e:
+            addField("status", "error")
+            addField("exception", str(e))
 
     def userclose(self):
 
