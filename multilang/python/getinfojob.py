@@ -30,6 +30,7 @@ import datetime
 import os
 import requests
 from lxml import html
+import json
 
 class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
 
@@ -43,6 +44,8 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
         self.location = self.getParam("location")
 
     def userprocess(self):
+        location = self.location
+        job = self.job
         place=""
 
         # Si location no está vacío definimos el lugar
@@ -50,12 +53,26 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
             place = "&location="+location
 
 
+
         query = "https://www.linkedin.com/jobs/search?keywords=" + job + place
 
         # Extraemos los nombres de los trabajos y los enlaces
-        page = html.fromstring.requests.get(query).content
+        page = html.fromstring(requests.get(query).content)
         offersNames = page.xpath('//span[@class="job-title-text"]/text()')
-        offersLinks = page.xpath('//span[@class="job-title-link"]/text()')
+        offersLinks = page.xpath('//a[@class="job-title-link"]/text()')
+
+        print offersLinks
+
+        for name,link in zip(offersNames, offersLinks):
+            print name
+            print link
+            offers[name]=link
+
+        print offers
+        # Creamos el json a partir del dicciolnario de ofertas
+        json_data = json.dumps(offers)
+        self.addField("keyfield", offers)
+        self.emit()
 
     def userclose(self):
 
