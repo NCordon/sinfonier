@@ -59,16 +59,13 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
         # Extraemos los nombres de los trabajos y los enlaces
         page = html.fromstring(requests.get(query).content)
         offersNames = page.xpath('//span[@class="job-title-text"]/text()')
-        offersLinks = page.xpath('//a[@class="job-title-link"]/text()')
+        offersLinks = page.xpath('//a[@class="job-title-link"]/@href')
 
-        print offersLinks
+        offers={}
 
         for name,link in zip(offersNames, offersLinks):
-            print name
-            print link
             offers[name]=link
 
-        print offers
         # Creamos el json a partir del dicciolnario de ofertas
         json_data = json.dumps(offers)
         self.addField("keyfield", offers)
