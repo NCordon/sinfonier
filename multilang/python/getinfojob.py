@@ -31,6 +31,7 @@ import os
 import requests
 from lxml import html
 import json
+import re
 
 class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
 
@@ -56,18 +57,41 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
             place = "&location="+location
 
 
+        # Queremos extraer el id
+        get_locationid = re.compile("[^:]*\:[^:]*$")
+        get_location = re.compile("locationId\"\:[^\}]*")
+
 
         query = "https://www.linkedin.com/jobs/search?keywords=" + job + place
+        query_reponse = requests.get(query)
+        # Obtenemos el identificador (por ejemplo es:5086
+        locationId = get_location.search(query_reponse.text).group(0)
 
-        # Extraemos los nombres de los trabajos y los enlaces
-        page = html.fromstring(requests.get(query).content)
-        offersNames = page.xpath('//span[@class="job-title-text"]/text()')
-        offersLinks = page.xpath('//a[@class="job-title-link"]/@href')
+        # Lo normalizamos
+        locationId = locationId.replace('"','').replace("locationId:",'')
+        start = 0
+        scrap = True
 
+        # Diccionario de ofertas
         offers={}
 
-        for name,link in zip(offersNames, offersLinks):
-            offers[name]=link
+        while scrap:
+            query = "https://www.linkedin.com/jobs/search?keywords=" + job + '&locationId=' + locationId + '&start=' + str(start) + '&count=25'
+
+            # Extraemos los nombres de los trabajos y los enlaces
+            page = html.fromstring(requests.get(query).content)
+            offersNames = page.xpath('//span[@class="job-title-text"]/text()')
+            offersLinks = page.xpath('//a[@class="job-title-link"]/@href')
+
+
+            for name,link in zip(offersNames, offersLinks):
+                offers[name]=link
+
+            # Scrapearemos la siguiente página
+            start = start+25
+
+            if not offersNames:
+                scrap = False
 
         # Creamos el json a partir del dicciolnario de ofertas
         json_data = json.dumps(offers)
