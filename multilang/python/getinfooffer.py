@@ -32,36 +32,37 @@ import requests
 from lxml import html
 import json
 
-class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
+class GetInfoOffer(basesinfonierbolt.BaseSinfonierBolt):
 
     def __init__(self):
 
         basesinfonierbolt.BaseSinfonierBolt().__init__()
 
     def userprepare(self):
-        self.keywords=self.getParam("url")
+        self.url=self.getParam("url")
 
 
     def userprocess(self):
         url = self.url
 
         # Extraemos los nombres de los trabajos y los enlaces
-        page = html.fromstring(requests.get(url).content)
-        offersNames = page.xpath('//title/text()')
-        offersLinks = page.xpath('//a[@class="job-title-link"]/@href')
+            # Simulando un navegador, ya que Linkedin por defecto no deja hacer
+            # scraping a páginas personales
+        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        page = html.fromstring(requests.get(url, headers=headers).content)
 
-        offers={}
-
-        for name,link in zip(offersNames, offersLinks):
-            offers[name]=link
+        # Obtenemos la información de la oferta
+        info = page.xpath('//code[@id="decoratedJobPostingModule"]/comment()')[0]
+        url = page.xpath('//code[@id="topCardV2Module"]/comment()')[0]
 
         # Creamos el json a partir del dicciolnario de ofertas
-        json_data = json.dumps(offers)
-        self.addField("keyfield", offers)
+
+        self.addField("description", [info.text])
+        self.addField("company", [info.text])
         self.emit()
 
     def userclose(self):
 
         pass
 
-GetInfoJob().run()
+GetInfoOffer().run()
