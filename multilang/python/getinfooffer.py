@@ -63,14 +63,38 @@ class GetInfoOffer(basesinfonierbolt.BaseSinfonierBolt):
 
             company_json = info_json['decoratedJobPosting']['decoratedCompany']
 
+            try:
+                self.addField("companyName", company_json['canonicalName'])
+            except Exception,e:
+                self.addField("companyName", "non-existing")
+
+            try:
+                self.addField("sector", company_json['formattedIndustries'])
+            except Exception,e:
+                self.addField("sector", "non-existing")
+
+            try:
+                self.addField("desciption", [company_json['localizedDescription']])
+            except Exception,e:
+                self.addField("description", "non-existing")
+
+            try:
+                self.addField("offerViews", url_json["viewCount"])
+            except Exception,e:
+                self.addField("offerViews", "non-existing")
+
+            try:
+                self.addField("registrationUrl", url_json["registrationUrl"])
+            except Exception,e:
+                self.addField("registrationUrl", "non-existing")
 
 
-            self.addField("companyName", company_json['canonicalName'])
-            self.addField("sector", company_json['formattedIndustries'])
-            self.addField("desciption", [company_json['localizedDescription']])
-            self.addField("offerViews", url_json["viewCount"])
-            self.addField("registrationUrl", url_json["registrationUrl"])
-            self.addField("companyLinkedin", url_json["companyPageNameLink"])
+            try:
+                self.addField("companyLinkedin", url_json["companyPageNameLink"])
+            except Exception,e:
+                self.addField("companyLinkedin", "non-existing")
+                
+
             self.emit()
         # Excepción si la página no existe
         except Exception,e:
