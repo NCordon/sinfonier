@@ -25,7 +25,7 @@ public class TestYourBolt {
 
     	// Python
     	//Map<String, Object> result = Runner.runPy(ComponentType.BOLT, LauncherPyBolts.class, "pythonboltfile.py");
-        Map<String, Object> result = Runner.runPy(ComponentType.BOLT, LauncherPyBolts.class, "getinfooffer.py");
+        Map<String, Object> result = Runner.runPy(ComponentType.BOLT, LauncherPyBolts.class, "getinfojob.py");
 
         // Code the test conditions
         /*Assert.assertNotNull(result.get("username"));

@@ -71,7 +71,7 @@ class GetInfoJob(basesinfonierbolt.BaseSinfonierBolt):
 
         # Creamos el json a partir del dicciolnario de ofertas
         json_data = json.dumps(offers)
-        self.addField("keyfield", offers)
+        self.addField("ofertas", offers)
         self.emit()
 
     def userclose(self):
